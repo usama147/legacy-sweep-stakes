@@ -23,10 +23,8 @@ async function loadPoolTeams() {
     const result = [];
     snap.forEach(d => {
       const p = d.data();
-      if (!p.teams) return;
-      Object.entries(p.teams).forEach(([tierKey, team]) => {
-        result.push({ participantName: p.name, tierKey, team });
-      });
+      if (!p.team) return;
+      result.push({ participantName: p.name, tierKey: "assigned", team: p.team });
     });
     return result;
   } catch { return []; }
@@ -57,23 +55,95 @@ function renderMatchCards(container, events, poolTeams) {
     return;
   }
 
+  const now = new Date();
   const results  = [];
   const live     = [];
   const upcoming = [];
+  const todayEvs = [];
 
   events.forEach(ev => {
     const s = ev.status?.type?.name || "STATUS_SCHEDULED";
+    const isToday = new Date(ev.date).toDateString() === now.toDateString();
     if (FINAL_STATES.has(s))     results.push(ev);
     else if (LIVE_STATES.has(s)) live.push(ev);
     else                         upcoming.push(ev);
+    if (isToday) todayEvs.push(ev);
   });
 
   results.sort((a, b)  => new Date(b.date) - new Date(a.date));
   upcoming.sort((a, b) => new Date(a.date) - new Date(b.date));
+  todayEvs.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-  if (live.length)     { container.appendChild(sectionHeader("LIVE NOW", true)); live.forEach(ev => container.appendChild(buildCard(ev, poolTeams, true,  false))); }
-  if (results.length)  { container.appendChild(sectionHeader("RESULTS"));        results.forEach(ev => container.appendChild(buildCard(ev, poolTeams, false, true))); }
-  if (upcoming.length) { container.appendChild(sectionHeader("UPCOMING MATCHES")); upcoming.forEach(ev => container.appendChild(buildCard(ev, poolTeams, false, false))); }
+  // ── Today block ─────────────────────────────────────────────────────────────
+  const todayAll = [...live, ...todayEvs.filter(ev => !LIVE_STATES.has(ev.status?.type?.name || ""))];
+  if (todayAll.length) {
+    const todayBlock = document.createElement("div");
+    todayBlock.className = "matches-today-block";
+
+    const todayHdr = document.createElement("div");
+    todayHdr.className = "matches-today-header";
+    if (live.length) {
+      const dot = document.createElement("span");
+      dot.className = "live-dot";
+      todayHdr.appendChild(dot);
+      todayHdr.appendChild(document.createTextNode("LIVE NOW"));
+    } else {
+      todayHdr.appendChild(document.createTextNode("TODAY'S MATCHES"));
+    }
+    todayBlock.appendChild(todayHdr);
+
+    todayAll.forEach(ev => {
+      const s = ev.status?.type?.name || "";
+      todayBlock.appendChild(buildCard(ev, poolTeams, LIVE_STATES.has(s), FINAL_STATES.has(s)));
+    });
+    container.appendChild(todayBlock);
+  }
+
+  // ── Tab bar ──────────────────────────────────────────────────────────────────
+  const tabBar = document.createElement("div");
+  tabBar.className = "matches-tab-bar";
+
+  const resTab = document.createElement("button");
+  resTab.className = "matches-tab active";
+  resTab.textContent = `RESULTS (${results.length})`;
+
+  const upTab = document.createElement("button");
+  upTab.className = "matches-tab";
+  upTab.textContent = `UPCOMING (${upcoming.length})`;
+
+  tabBar.appendChild(resTab);
+  tabBar.appendChild(upTab);
+  container.appendChild(tabBar);
+
+  // ── Results panel ────────────────────────────────────────────────────────────
+  const resPanel = document.createElement("div");
+  resPanel.className = "matches-panel";
+  if (results.length) {
+    results.forEach(ev => resPanel.appendChild(buildCard(ev, poolTeams, false, true)));
+  } else {
+    resPanel.innerHTML = `<div class="empty-state"><p>No results yet.</p></div>`;
+  }
+  container.appendChild(resPanel);
+
+  // ── Upcoming panel ───────────────────────────────────────────────────────────
+  const upPanel = document.createElement("div");
+  upPanel.className = "matches-panel matches-panel--hidden";
+  if (upcoming.length) {
+    upcoming.forEach(ev => upPanel.appendChild(buildCard(ev, poolTeams, false, false)));
+  } else {
+    upPanel.innerHTML = `<div class="empty-state"><p>No upcoming matches scheduled.</p></div>`;
+  }
+  container.appendChild(upPanel);
+
+  // Tab switching
+  resTab.addEventListener("click", () => {
+    resTab.classList.add("active"); upTab.classList.remove("active");
+    resPanel.classList.remove("matches-panel--hidden"); upPanel.classList.add("matches-panel--hidden");
+  });
+  upTab.addEventListener("click", () => {
+    upTab.classList.add("active"); resTab.classList.remove("active");
+    upPanel.classList.remove("matches-panel--hidden"); resPanel.classList.add("matches-panel--hidden");
+  });
 
   const ts = document.createElement("p");
   ts.style.cssText = "color:var(--muted);font-size:11px;text-align:right;margin-top:12px;font-family:'IBM Plex Mono',monospace;";
@@ -159,9 +229,7 @@ export function buildCard(event, poolTeams, isLive, isFinal) {
   homePool.forEach(pt => {
     const tag = document.createElement("span");
     tag.className = `owner-tag ${pt.tierKey}`;
-    tag.textContent = pt.participantName
-      ? `${pt.participantName} · ${tierLabel(pt.tierKey)}`
-      : tierLabel(pt.tierKey).toUpperCase();
+    tag.textContent = pt.participantName || "–";
     homeCol.appendChild(tag);
   });
   teamsRow.appendChild(homeCol);
@@ -207,9 +275,7 @@ export function buildCard(event, poolTeams, isLive, isFinal) {
   awayPool.forEach(pt => {
     const tag = document.createElement("span");
     tag.className = `owner-tag ${pt.tierKey}`;
-    tag.textContent = pt.participantName
-      ? `${pt.participantName} · ${tierLabel(pt.tierKey)}`
-      : tierLabel(pt.tierKey).toUpperCase();
+    tag.textContent = pt.participantName || "–";
     awayCol.appendChild(tag);
   });
   teamsRow.appendChild(awayCol);

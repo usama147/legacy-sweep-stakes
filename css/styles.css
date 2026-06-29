@@ -430,6 +430,7 @@ body {
 .owner-tag.big      { color: var(--big);      background: var(--big-dim);      border: 1px solid var(--big-border); }
 .owner-tag.smaller  { color: var(--smaller);  background: var(--smaller-dim);  border: 1px solid var(--smaller-border); }
 .owner-tag.underdog { color: var(--underdog); background: var(--underdog-dim); border: 1px solid var(--underdog-border); }
+.owner-tag.assigned { color: var(--green);    background: rgba(153,202,61,0.12); border: 1px solid rgba(153,202,61,0.3); }
 
 .match-score {
   font-family: 'IBM Plex Mono', monospace;
@@ -1308,7 +1309,7 @@ body {
 
 .bm-teams {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   margin-bottom: 20px;
 }
@@ -1368,6 +1369,7 @@ body {
 .bm-owner-tag.big      { color: var(--big);      background: var(--big-dim);      border: 1px solid var(--big-border); }
 .bm-owner-tag.smaller  { color: var(--smaller);  background: var(--smaller-dim);  border: 1px solid var(--smaller-border); }
 .bm-owner-tag.underdog { color: var(--underdog); background: var(--underdog-dim); border: 1px solid var(--underdog-border); }
+.bm-owner-tag.assigned { color: var(--green);    background: rgba(153,202,61,0.12); border: 1px solid rgba(153,202,61,0.3); }
 
 .bm-venue {
   font-family: 'IBM Plex Mono', monospace;
@@ -1377,3 +1379,47 @@ body {
   border-top: 1px solid var(--border);
   padding-top: 14px;
 }
+
+/* ── Matches tab layout ───────────────────────────────────────────────────── */
+.matches-today-block {
+  background: rgba(153, 202, 61, 0.06);
+  border: 1px solid rgba(153, 202, 61, 0.2);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 20px;
+}
+.matches-today-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--green);
+  margin-bottom: 12px;
+}
+.matches-tab-bar {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+.matches-tab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  padding: 8px 16px 10px;
+  cursor: pointer;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+}
+.matches-tab:hover { color: var(--text); }
+.matches-tab.active {
+  color: var(--green);
+  border-bottom-color: var(--green);
+}
+.matches-panel--hidden { display: none; }
