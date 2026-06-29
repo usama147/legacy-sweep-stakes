@@ -3,14 +3,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/fireba
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
 
-// ── REPLACE THESE with the new Firebase project credentials ─────────────────
 const firebaseConfig = {
-  apiKey:            "REPLACE_WITH_NEW_API_KEY",
-  authDomain:        "REPLACE_WITH_NEW_AUTH_DOMAIN",
-  projectId:         "REPLACE_WITH_NEW_PROJECT_ID",
-  storageBucket:     "REPLACE_WITH_NEW_STORAGE_BUCKET",
-  messagingSenderId: "REPLACE_WITH_NEW_SENDER_ID",
-  appId:             "REPLACE_WITH_NEW_APP_ID"
+  apiKey:            "AIzaSyCooGtLEKnhmAOqe1TuuAop7uoMWnKMT8Y",
+  authDomain:        "legacysweepstakes.firebaseapp.com",
+  projectId:         "legacysweepstakes",
+  storageBucket:     "legacysweepstakes.firebasestorage.app",
+  messagingSenderId: "942389835868",
+  appId:             "1:942389835868:web:ed074e491572654a5fce99",
+  measurementId:     "G-GQ6XHNMKQS"
 };
 
 export const app  = initializeApp(firebaseConfig);
