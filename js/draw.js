@@ -1,5 +1,5 @@
 // js/draw.js
-import { db } from "./config.js";
+import { db, KNOCKOUT_TEAMS, BIG_TEAM_NAMES } from "./config.js";
 import {
   doc, writeBatch, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
@@ -13,34 +13,33 @@ function fisherYates(arr) {
   return a;
 }
 
-export async function runDraw(participants, tiers) {
+export async function runDraw(participants) {
   const n = participants.length;
 
-  // Validate
-  for (const tier of tiers) {
-    if (tier.teams.length < n) {
-      throw new Error(`${tier.label} has only ${tier.teams.length} teams for ${n} participants.`);
-    }
+  if (n < 2)  throw new Error(`Need at least 2 participants (have ${n}).`);
+  if (n > 30) throw new Error(`Maximum 30 participants allowed (have ${n}).`);
+  if (KNOCKOUT_TEAMS.length < n) {
+    throw new Error(`Not enough teams (${KNOCKOUT_TEAMS.length}) for ${n} participants.`);
   }
 
-  // Shuffle each tier's team pool and take first n
-  const assignments = {}; // { participantId: { tierKey: team } }
-  participants.forEach(p => { assignments[p.id] = {}; });
+  // Separate big and non-big teams
+  const bigTeams    = KNOCKOUT_TEAMS.filter(t => BIG_TEAM_NAMES.has(t.name.toLowerCase()));
+  const nonBigTeams = KNOCKOUT_TEAMS.filter(t => !BIG_TEAM_NAMES.has(t.name.toLowerCase()));
 
-  for (const tier of tiers) {
-    const shuffled = fisherYates(tier.teams).slice(0, n);
-    participants.forEach((p, i) => {
-      assignments[p.id][tier.key] = shuffled[i];
-    });
-  }
+  // Randomly remove 1 non-big team — this is the unowned slot
+  const shuffledNonBig = fisherYates(nonBigTeams);
+  const pool = [...bigTeams, ...shuffledNonBig.slice(0, n - bigTeams.length)];
 
-  // Write all participant docs + pool.drawCompleted in one batch
+  // Final shuffle of the 30-team pool
+  const shuffled = fisherYates(pool);
+
+  // Build Firestore batch
   const batch = writeBatch(db);
 
   participants.forEach((p, i) => {
     const ref = doc(db, "pool", "main", "participants", p.id);
     batch.update(ref, {
-      teams: assignments[p.id],
+      team: shuffled[i],
       drawOrder: i + 1
     });
   });
