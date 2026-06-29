@@ -3,18 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FifaPot 2026</title>
+  <title>Legacy Sweep Stakes 2026</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 
-  <!-- AUTH SCREEN (hidden until auth state resolved) -->
+  <!-- AUTH SCREEN -->
   <div id="auth-screen" style="opacity:0">
     <div class="auth-card">
-      <h1 class="auth-title">FIFAPOT</h1>
-      <p class="auth-subtitle">World Cup 2026</p>
+      <div class="auth-logo-wrap">
+        <img src="https://www.legacyfiduciaryservices.co.za/wp-content/uploads/2024/04/SM-LEGACY-LOGO-Final-01-011.svg"
+             alt="Legacy Fiduciary Services"
+             class="auth-logo-img">
+      </div>
+      <h1 class="auth-title">LEGACY SWEEP STAKES</h1>
+      <p class="auth-subtitle">World Cup 2026 · Knockout Draw</p>
 
       <!-- Login form -->
       <form id="login-form">
@@ -59,7 +64,7 @@
 
     <!-- Top bar -->
     <header id="app-header">
-      <span class="app-logo">FIFAPOT</span>
+      <span class="app-logo">LEGACY SWEEP STAKES</span>
       <span id="user-email-display" class="user-email"></span>
       <div id="online-pill" style="opacity:0">
         <svg viewBox="0 0 20 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -86,7 +91,6 @@
       <div id="tab-pool" class="tab-view active"></div>
       <div id="tab-matches" class="tab-view" style="display:none"></div>
       <div id="tab-pot" class="tab-view" style="display:none"></div>
-      <div id="tab-standings" class="tab-view" style="display:none"></div>
       <div id="tab-bracket" class="tab-view" style="display:none"></div>
       <div id="tab-players" class="tab-view" style="display:none"></div>
       <div id="tab-admin" class="tab-view" style="display:none"></div>
