@@ -229,10 +229,8 @@ async function loadPoolTeams() {
     const result = [];
     snap.forEach(d => {
       const p = d.data();
-      if (!p.teams) return;
-      Object.entries(p.teams).forEach(([tierKey, team]) => {
-        result.push({ participantName: p.name, tierKey, team });
-      });
+      if (!p.team) return;
+      result.push({ participantName: p.name, tierKey: "assigned", team: p.team });
     });
     return result;
   } catch { return []; }
