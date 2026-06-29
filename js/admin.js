@@ -1,5 +1,5 @@
 // js/admin.js
-import { db, DEFAULT_TIERS } from "./config.js";
+import { db } from "./config.js";
 import {
   doc, getDoc, setDoc, collection,
   getDocs, addDoc, deleteDoc, serverTimestamp, writeBatch, updateDoc
@@ -34,12 +34,10 @@ export async function renderAdmin(container) {
 async function loadPool() {
   const snap = await getDoc(POOL_REF());
   if (snap.exists()) return snap.data();
-  // First time: seed with defaults
   const initial = {
     drawCompleted: false,
     drawDate: null,
     buyIn: 100,
-    tiers: DEFAULT_TIERS,
     eliminatedTeams: [],
     finalStandings: { champion: null, runnerUp: null, thirdPlace: null }
   };
@@ -66,14 +64,13 @@ function renderAdminUI(container, poolData, participants, registeredUsers) {
     <p style="color:var(--muted);font-size:13px;">
       ${drawDone
         ? `Draw completed on ${new Date(poolData.drawDate?.seconds * 1000).toLocaleDateString()}.`
-        : `Draw not yet run. ${participants.length}/16 participants added.`}
+        : `Draw not yet run. ${participants.length}/30 participants added.`}
     </p>`;
   container.appendChild(header);
 
   if (!drawDone) {
     renderParticipantManager(container, participants, registeredUsers);
-    renderTierEditor(container, poolData);
-    renderDrawButton(container, participants, poolData);
+    renderDrawButton(container, participants);
   } else {
     const lockNotice = el("div", "card");
     lockNotice.innerHTML = `
@@ -91,7 +88,7 @@ function renderAdminUI(container, poolData, participants, registeredUsers) {
 // ── Participant manager ──────────────────────────────────────────────────────
 function renderParticipantManager(container, participants, registeredUsers) {
   const section = el("div", "admin-section");
-  section.innerHTML = `<h3>Participants (${participants.length}/16)</h3>`;
+  section.innerHTML = `<h3>Participants (${participants.length}/30)</h3>`;
 
   const listEl = el("div", "participant-list");
   section.appendChild(listEl);
@@ -156,7 +153,7 @@ function renderParticipantManager(container, participants, registeredUsers) {
 
         if (!alreadyAdded) {
           chip.addEventListener("click", async () => {
-            if (participants.length >= 16) { alert("Maximum 16 participants reached."); return; }
+            if (participants.length >= 30) { alert("Maximum 30 participants reached."); return; }
             chip.disabled = true;
             try {
               await addDoc(PARTS_REF(), {
@@ -201,8 +198,8 @@ function renderParticipantManager(container, participants, registeredUsers) {
   addBtn.addEventListener("click", async () => {
     const name = nameInput.value.trim();
     if (!name) return;
-    if (participants.length >= 16) {
-      alert("Maximum 16 participants reached.");
+    if (participants.length >= 30) {
+      alert("Maximum 30 participants reached.");
       return;
     }
     if (participants.some(p => p.name.toLowerCase() === name.toLowerCase())) {
@@ -234,117 +231,13 @@ function renderParticipantManager(container, participants, registeredUsers) {
   container.appendChild(section);
 }
 
-// ── Tier/team editor ─────────────────────────────────────────────────────────
-function renderTierEditor(container, poolData) {
-  const section = el("div", "admin-section");
-  section.innerHTML = `<h3>Team Tiers (edit before draw)</h3>`;
-
-  // Deep copy tiers for local editing
-  let tiers = JSON.parse(JSON.stringify(poolData.tiers));
-
-  const tiersEl = el("div");
-  section.appendChild(tiersEl);
-
-  const saveBtn = el("button", "btn-primary");
-  saveBtn.textContent = "Save Tiers";
-  saveBtn.style.marginTop = "16px";
-  saveBtn.style.width = "100%";
-  saveBtn.addEventListener("click", async () => {
-    saveBtn.disabled = true;
-    saveBtn.textContent = "Saving...";
-    try {
-      await setDoc(POOL_REF(), { tiers }, { merge: true });
-      saveBtn.textContent = "Saved ✓";
-      setTimeout(() => { saveBtn.textContent = "Save Tiers"; saveBtn.disabled = false; }, 2000);
-    } catch (err) {
-      console.error(err);
-      saveBtn.textContent = "Error saving — retry";
-      saveBtn.disabled = false;
-    }
-  });
-
-  function renderTiers() {
-    tiersEl.innerHTML = "";
-    tiers.forEach((tier, ti) => {
-      const tierCard = el("div", "card");
-      tierCard.style.marginBottom = "10px";
-      tierCard.innerHTML = `
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-          <span class="tier-badge ${tier.key}">${tier.icon} ${tier.label}</span>
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-left:auto;">${tier.teams.length} teams</span>
-        </div>`;
-
-      const teamList = el("div", "team-list");
-      tier.teams.forEach((team, idx) => {
-        const pill = el("div", `team-pill ${tier.key}`);
-        pill.style.cursor = "default";
-
-        const nameSpan = el("span");
-        nameSpan.textContent = `${team.flag} ${team.name}`;
-        pill.appendChild(nameSpan);
-
-        // Labeled move buttons, revealed on hover (always visible on touch)
-        const actions = el("div", "tier-actions");
-        tiers.forEach((otherTier, oti) => {
-          if (oti === ti) return;
-          const moveBtn = el("button", `tier-action-btn ${otherTier.key}`);
-          moveBtn.textContent = `→ ${otherTier.label}`;
-          moveBtn.title = `Move to ${otherTier.label}`;
-          moveBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            // Animate pill out before removing
-            gsap.to(pill, {
-              duration: 0.18, opacity: 0, x: -8,
-              onComplete: () => {
-                tiers[ti].teams.splice(idx, 1);
-                tiers[oti].teams.push(team);
-                renderTiers();
-              }
-            });
-          });
-          actions.appendChild(moveBtn);
-        });
-        pill.appendChild(actions);
-
-        teamList.appendChild(pill);
-      });
-
-      tierCard.appendChild(teamList);
-      tiersEl.appendChild(tierCard);
-    });
-  }
-
-  renderTiers();
-  section.appendChild(saveBtn);
-  container.appendChild(section);
-}
-
 // ── Draw button ──────────────────────────────────────────────────────────────
-function renderDrawButton(container, participants, poolData) {
+function renderDrawButton(container, participants) {
   const section = el("div", "admin-section");
-
-  const tiers = poolData.tiers;
   const n = participants.length;
 
   const validationEl = el("div", "card");
   validationEl.style.marginBottom = "12px";
-
-  function validate() {
-    const issues = [];
-    if (n < 2) issues.push(`Need at least 2 participants (have ${n}).`);
-    tiers.forEach(t => {
-      if (t.teams.length < n) {
-        issues.push(`${t.label} has ${t.teams.length} teams but needs ${n}.`);
-      }
-    });
-    if (issues.length === 0) {
-      validationEl.innerHTML = `<p style="color:var(--green);font-size:13px;">✓ Ready to draw ${n} participants.</p>`;
-      drawBtn.disabled = false;
-    } else {
-      validationEl.innerHTML = issues.map(i => `<p style="color:var(--warning);font-size:13px;">⚠ ${i}</p>`).join("");
-      drawBtn.disabled = true;
-    }
-  }
 
   const drawBtn = el("button", "btn-primary");
   drawBtn.style.width = "100%";
@@ -353,16 +246,27 @@ function renderDrawButton(container, participants, poolData) {
   drawBtn.style.letterSpacing = "2px";
   drawBtn.textContent = "RUN THE DRAW";
 
+  function validate() {
+    const issues = [];
+    if (n < 2)  issues.push(`Need at least 2 participants (have ${n}).`);
+    if (n > 30) issues.push(`Maximum 30 participants allowed (have ${n}).`);
+    if (issues.length === 0) {
+      validationEl.innerHTML = `<p style="color:var(--green);font-size:13px;">✓ Ready to draw ${n} participants from 31 knockout teams.</p>`;
+      drawBtn.disabled = false;
+    } else {
+      validationEl.innerHTML = issues.map(i => `<p style="color:var(--warning);font-size:13px;">⚠ ${i}</p>`).join("");
+      drawBtn.disabled = true;
+    }
+  }
+
   drawBtn.addEventListener("click", async () => {
     if (!confirm(`Run the draw for ${n} participants? This cannot be undone.`)) return;
     const { runDraw } = await import("./draw.js");
     drawBtn.disabled = true;
     drawBtn.textContent = "Drawing...";
     try {
-      const freshPool = await loadPool();
-      await runDraw(participants, freshPool.tiers);
+      await runDraw(participants);
       drawBtn.textContent = "Draw complete!";
-      // Reload admin panel to show locked state
       const { renderAdmin } = await import("./admin.js");
       const container = document.getElementById("tab-admin");
       container.innerHTML = "";
