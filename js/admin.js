@@ -251,7 +251,7 @@ function renderDrawButton(container, participants) {
     if (n < 2)  issues.push(`Need at least 2 participants (have ${n}).`);
     if (n > 30) issues.push(`Maximum 30 participants allowed (have ${n}).`);
     if (issues.length === 0) {
-      validationEl.innerHTML = `<p style="color:var(--green);font-size:13px;">✓ Ready to draw ${n} participants from 31 knockout teams.</p>`;
+      validationEl.innerHTML = `<p style="color:var(--green);font-size:13px;">✓ Ready to draw ${n} participants from 32 knockout teams.</p>`;
       drawBtn.disabled = false;
     } else {
       validationEl.innerHTML = issues.map(i => `<p style="color:var(--warning);font-size:13px;">⚠ ${i}</p>`).join("");

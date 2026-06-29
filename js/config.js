@@ -19,7 +19,7 @@ export const db   = getFirestore(app);
 
 export const ADMIN_EMAIL = "usama@brandesign.co.za";
 
-// ── All 31 R32 knockout teams (South Africa excluded — already eliminated) ───
+// ── All 32 R32 knockout teams ────────────────────────────────────────────────
 export const KNOCKOUT_TEAMS = [
   // Big teams (14) — must all be assigned in draw
   { name: "Argentina",    flag: "🇦🇷" },
@@ -36,24 +36,25 @@ export const KNOCKOUT_TEAMS = [
   { name: "Colombia",     flag: "🇨🇴" },
   { name: "Morocco",      flag: "🇲🇦" },
   { name: "Japan",        flag: "🇯🇵" },
-  // Non-big teams (17) — 16 assigned, 1 randomly left unowned
-  { name: "Norway",             flag: "🇳🇴" },
+  // Non-big teams (18) — 16 assigned, 2 randomly left unowned
   { name: "Mexico",             flag: "🇲🇽" },
-  { name: "Senegal",            flag: "🇸🇳" },
-  { name: "Ecuador",            flag: "🇪🇨" },
-  { name: "Austria",            flag: "🇦🇹" },
-  { name: "Turkey",             flag: "🇹🇷" },
+  { name: "South Africa",       flag: "🇿🇦" },
   { name: "Canada",             flag: "🇨🇦" },
-  { name: "Australia",          flag: "🇦🇺" },
-  { name: "Algeria",            flag: "🇩🇿" },
-  { name: "Ivory Coast",        flag: "🇨🇮" },
-  { name: "Sweden",             flag: "🇸🇪" },
-  { name: "Paraguay",           flag: "🇵🇾" },
-  { name: "Ghana",              flag: "🇬🇭" },
-  { name: "Cape Verde",         flag: "🇨🇻" },
-  { name: "Egypt",              flag: "🇪🇬" },
   { name: "Bosnia-Herzegovina", flag: "🇧🇦" },
+  { name: "USA",                flag: "🇺🇸" },
+  { name: "Australia",          flag: "🇦🇺" },
+  { name: "Paraguay",           flag: "🇵🇾" },
+  { name: "Ivory Coast",        flag: "🇨🇮" },
+  { name: "Ecuador",            flag: "🇪🇨" },
+  { name: "Sweden",             flag: "🇸🇪" },
+  { name: "Egypt",              flag: "🇪🇬" },
+  { name: "Cape Verde",         flag: "🇨🇻" },
+  { name: "Norway",             flag: "🇳🇴" },
+  { name: "Senegal",            flag: "🇸🇳" },
+  { name: "Austria",            flag: "🇦🇹" },
+  { name: "Algeria",            flag: "🇩🇿" },
   { name: "DR Congo",           flag: "🇨🇩" },
+  { name: "Ghana",              flag: "🇬🇭" },
 ];
 
 // Names that must never be the unowned slot
