@@ -4,7 +4,7 @@ import {
   doc, getDoc, collection, getDocs,
   updateDoc, arrayUnion
 } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
-import { fetchKnockoutEliminations, mergeEliminations, isTeamEliminated } from "./elimination.js";
+import { isTeamEliminated } from "./elimination.js";
 
 export async function renderPot(container, isAdmin) {
   container.innerHTML = `<div class="loading">Loading pot...</div>`;
@@ -39,13 +39,11 @@ export async function renderPot(container, isAdmin) {
   }
 
   const eliminated      = pool.eliminatedTeams || [];
-  const firestoreElim   = new Set(eliminated.map(t => t.name.toLowerCase()));
-  const espnElim        = await fetchKnockoutEliminations();
-  const eliminatedNames = mergeEliminations(firestoreElim, espnElim);
+  const eliminatedNames = new Set(eliminated.map(t => t.name.toLowerCase()));
   const potTotal        = pool.buyIn * participants.length;
   const finalStandings  = pool.finalStandings || { champion: null, runnerUp: null, thirdPlace: null };
 
-  // ── Pot summary ─────────────────────────────────────────────────────────────
+  // ── Pot summary ──────────────────────────────────────────────────────────────
   const potCard = mkCard();
   const potHeader = document.createElement("div");
   potHeader.className = "section-header";
@@ -56,7 +54,6 @@ export async function renderPot(container, isAdmin) {
   potTotalEl.className = "pot-total";
   potTotalEl.textContent = "R0";
   potCard.appendChild(potTotalEl);
-  // Count-up animation
   gsap.to({ val: 0 }, {
     val: potTotal,
     duration: 1.4,
@@ -71,7 +68,7 @@ export async function renderPot(container, isAdmin) {
   potCard.appendChild(potSubEl);
   container.appendChild(potCard);
 
-  // ── Payout projections / final payouts ──────────────────────────────────────
+  // ── Payout projections / final payouts ───────────────────────────────────────
   const payoutCard = mkCard();
   payoutCard.style.marginTop = "12px";
   const payoutHeader = document.createElement("div");
@@ -91,11 +88,7 @@ export async function renderPot(container, isAdmin) {
     row.className = "payout-row";
 
     const labelEl = document.createElement("span");
-    if (standing) {
-      labelEl.textContent = `${label} ${standing.flag} ${standing.teamName}`;
-    } else {
-      labelEl.textContent = label;
-    }
+    labelEl.textContent = standing ? `${label} ${standing.flag} ${standing.teamName}` : label;
     row.appendChild(labelEl);
 
     const amtEl = document.createElement("div");
@@ -134,9 +127,8 @@ export async function renderPot(container, isAdmin) {
   standingsCard.appendChild(standingsHeader);
 
   participants.forEach(p => {
-    const teams = Object.entries(p.teams || {}).map(([key, t]) => ({ key, ...t }));
-    const aliveTeams = teams.filter(t => !isTeamEliminated(t.name, eliminatedNames));
-    const isOut = teams.length > 0 && aliveTeams.length === 0;
+    const team = p.team;
+    const isOut = !!team && isTeamEliminated(team.name, eliminatedNames);
 
     const row = document.createElement("div");
     row.style.cssText = "display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);gap:10px;";
@@ -148,23 +140,21 @@ export async function renderPot(container, isAdmin) {
     nameEl.textContent = p.name;
     left.appendChild(nameEl);
 
-    const chipsEl = document.createElement("div");
-    chipsEl.style.cssText = "display:flex;flex-wrap:wrap;gap:6px;margin-top:5px;";
-    ["big","smaller","underdog"].forEach(key => {
-      const t = p.teams?.[key];
-      if (!t) return;
-      const elim = isTeamEliminated(t.name, eliminatedNames);
+    if (team) {
+      const chipsEl = document.createElement("div");
+      chipsEl.style.cssText = "display:flex;flex-wrap:wrap;gap:6px;margin-top:5px;";
       const chip = document.createElement("span");
-      chip.className = `team-chip ${key}${elim ? " eliminated" : ""}`;
-      chip.textContent = `${t.flag} ${t.name}`;
+      chip.className = `team-chip${isOut ? " eliminated" : ""}`;
+      chip.textContent = `${team.flag} ${team.name}`;
       chipsEl.appendChild(chip);
-    });
-    left.appendChild(chipsEl);
+      left.appendChild(chipsEl);
+    }
+
     row.appendChild(left);
 
     const statusEl = document.createElement("div");
     statusEl.style.cssText = `color:${isOut ? "var(--error)" : "var(--green)"};font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;white-space:nowrap;margin-top:4px;`;
-    statusEl.textContent = isOut ? "OUT" : `${aliveTeams.length}/3 alive`;
+    statusEl.textContent = isOut ? "OUT" : "ALIVE";
     row.appendChild(statusEl);
 
     standingsCard.appendChild(row);
@@ -191,11 +181,10 @@ function renderEliminationPanel(container, participants, eliminatedNames) {
 
   const allTeams = [];
   participants.forEach(p => {
-    Object.entries(p.teams || {}).forEach(([key, team]) => {
-      if (!isTeamEliminated(team.name, eliminatedNames)) {
-        allTeams.push({ participantName: p.name, participantId: p.id, tierKey: key, team });
-      }
-    });
+    const team = p.team;
+    if (team && !isTeamEliminated(team.name, eliminatedNames)) {
+      allTeams.push({ participantName: p.name, participantId: p.id, team });
+    }
   });
 
   if (allTeams.length === 0) {
@@ -235,7 +224,6 @@ function renderEliminationPanel(container, participants, eliminatedNames) {
           eliminatedTeams: arrayUnion({
             name:            entry.team.name,
             flag:            entry.team.flag,
-            tier:            entry.tierKey,
             participantName: entry.participantName,
             eliminatedAt:    new Date().toISOString()
           })
@@ -266,9 +254,7 @@ function renderFinalStandingsPanel(container, participants, potTotal) {
 
   const allTeamOptions = [];
   participants.forEach(p => {
-    Object.entries(p.teams || {}).forEach(([key, team]) => {
-      allTeamOptions.push({ participantName: p.name, tierKey: key, team });
-    });
+    if (p.team) allTeamOptions.push({ participantName: p.name, team: p.team });
   });
 
   function makeSelect(id, labelText) {
