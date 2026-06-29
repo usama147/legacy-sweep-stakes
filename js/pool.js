@@ -56,25 +56,20 @@ export async function renderPool(container) {
   }
   container.appendChild(hdr);
 
-  // Eliminated teams: merge Firestore manual list with ESPN knockout losers
+  // Merge Firestore + ESPN eliminations
   const firestoreElim = new Set(
     (pool.eliminatedTeams || []).map(t => t.name.toLowerCase())
   );
   const espnElim = await fetchKnockoutEliminations();
   const eliminatedSet = mergeEliminations(firestoreElim, espnElim);
 
-  // Tier label map
-  const tierLabel = {};
-  (pool.tiers || []).forEach(t => { tierLabel[t.key] = t; });
-
   // Participant cards
   participants.forEach(p => {
     const card = document.createElement("div");
     card.className = "participant-card";
 
-    const allTeams = Object.values(p.teams || {});
-    const alive = allTeams.filter(t => !isTeamEliminated(t.name, eliminatedSet));
-    const isOut = alive.length === 0 && allTeams.length > 0;
+    const team = p.team;
+    const isOut = !!team && isTeamEliminated(team.name, eliminatedSet);
 
     const nameDiv = document.createElement("div");
     nameDiv.className = "participant-name";
@@ -94,18 +89,12 @@ export async function renderPool(container) {
     const teamsEl = document.createElement("div");
     teamsEl.className = "participant-teams";
 
-    const tierOrder = ["big", "smaller", "underdog"];
-    tierOrder.forEach(key => {
-      const team = p.teams?.[key];
-      if (!team) return;
-      const tier = tierLabel[key];
-      const isElim = isTeamEliminated(team.name, eliminatedSet);
+    if (team) {
       const chip = document.createElement("span");
-      chip.className = `team-chip ${key}${isElim ? " eliminated" : ""}`;
+      chip.className = `team-chip${isOut ? " eliminated" : ""}`;
       chip.textContent = `${team.flag} ${team.name}`;
-      if (tier) chip.title = tier.label;
       teamsEl.appendChild(chip);
-    });
+    }
 
     card.appendChild(teamsEl);
     container.appendChild(card);
