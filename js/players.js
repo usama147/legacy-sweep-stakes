@@ -136,9 +136,8 @@ function showList(container, participants, pool, eliminatedNames, eliminatedMap)
   }
 
   participants.forEach(p => {
-    const teams     = Object.entries(p.teams || {}).map(([key, t]) => ({ key, ...t }));
-    const aliveTeams = teams.filter(t => !isTeamEliminated(t.name, eliminatedNames));
-    const isOut      = teams.length > 0 && aliveTeams.length === 0;
+    const team     = p.team;
+    const isOut    = !!team && isTeamEliminated(team.name, eliminatedNames);
 
     const card = mk("div", "participant-card");
     if (p.paid) {
@@ -164,29 +163,25 @@ function showList(container, participants, pool, eliminatedNames, eliminatedMap)
       nameRow.appendChild(paidBadge);
     }
 
-    if (pool.drawCompleted && teams.length > 0) {
+    if (pool.drawCompleted && team) {
       const badge = mk("span");
       badge.style.cssText = `
         font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;
         margin-left:auto;
         color:${isOut ? "var(--error)" : "var(--green)"};`;
-      badge.textContent = isOut ? "OUT" : `${aliveTeams.length}/${teams.length} ALIVE`;
+      badge.textContent = isOut ? "OUT" : "ALIVE";
       nameRow.appendChild(badge);
     }
     card.appendChild(nameRow);
 
     // Team chips
-    if (pool.drawCompleted && teams.length > 0) {
+    if (pool.drawCompleted && team) {
       const chips = mk("div");
       chips.style.cssText = "display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;";
-      ["big", "smaller", "underdog"].forEach(key => {
-        const t = p.teams?.[key];
-        if (!t) return;
-        const elim = isTeamEliminated(t.name, eliminatedNames);
-        const chip = mk("span", `team-chip ${key}${elim ? " eliminated" : ""}`);
-        chip.textContent = `${t.flag} ${t.name}`;
-        chips.appendChild(chip);
-      });
+      const elim = isTeamEliminated(team.name, eliminatedNames);
+      const chip = mk("span", `team-chip${elim ? " eliminated" : ""}`);
+      chip.textContent = `${team.flag} ${team.name}`;
+      chips.appendChild(chip);
       card.appendChild(chips);
     }
 
@@ -211,11 +206,8 @@ function showList(container, participants, pool, eliminatedNames, eliminatedMap)
 function showDetail(container, p, participants, pool, eliminatedNames, eliminatedMap) {
   container.innerHTML = "";
 
-  const teams      = Object.entries(p.teams || {}).map(([key, t]) => ({ key, ...t }));
-  const aliveTeams = teams.filter(t => !isTeamEliminated(t.name, eliminatedNames));
-  const isOut      = teams.length > 0 && aliveTeams.length === 0;
-  const tierLabel  = {};
-  (pool.tiers || []).forEach(t => { tierLabel[t.key] = t; });
+  const team   = p.team;
+  const isOut  = !!team && isTeamEliminated(team.name, eliminatedNames);
 
   // ── Back button
   const backBtn = mk("button", "btn-ghost");
@@ -256,79 +248,60 @@ function showDetail(container, p, participants, pool, eliminatedNames, eliminate
     font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;margin-top:8px;
     color:${isOut ? "var(--error)" : "var(--green)"};`;
   if (isOut) {
-    statusLine.textContent = "ELIMINATED — ALL TEAMS OUT";
-  } else if (aliveTeams.length === teams.length) {
-    statusLine.textContent = `ALL ${teams.length} TEAMS STILL IN`;
+    statusLine.textContent = "ELIMINATED — TEAM OUT";
+  } else if (team) {
+    statusLine.textContent = "TEAM STILL IN";
   } else {
-    statusLine.textContent = `${aliveTeams.length} OF ${teams.length} TEAMS STILL IN`;
+    statusLine.textContent = "NO TEAM ASSIGNED YET";
   }
   profileCard.appendChild(statusLine);
   container.appendChild(profileCard);
 
   // ── Teams breakdown card
-  if (teams.length > 0) {
+  if (p.team) {
     const teamsCard = mk("div", "card");
     teamsCard.style.marginBottom = "12px";
     teamsCard.dataset.ga = "1";
 
     const teamsHdr = mk("div", "section-header");
-    teamsHdr.textContent = "Draw Assignments";
+    teamsHdr.textContent = "Draw Assignment";
     teamsCard.appendChild(teamsHdr);
 
-    ["big", "smaller", "underdog"].forEach((key, ki) => {
-      const t = p.teams?.[key];
-      if (!t) return;
-      const tier     = tierLabel[key];
-      const elim     = isTeamEliminated(t.name, eliminatedNames);
-      const elimInfo = eliminatedMap[t.name.toLowerCase()];
+    const t = p.team;
+    const elim     = isTeamEliminated(t.name, eliminatedNames);
+    const elimInfo = eliminatedMap[t.name.toLowerCase()];
 
-      const row = mk("div");
-      row.style.cssText = `
-        display:flex;align-items:center;gap:12px;padding:13px 0;
-        border-bottom:1px solid var(--border);`;
+    const row = mk("div");
+    row.style.cssText = "display:flex;align-items:center;gap:12px;padding:13px 0;";
 
-      // Tier badge
-      const tierBadge = mk("span", `tier-badge ${key}`);
-      tierBadge.textContent = tier ? `${tier.icon} ${tier.label}` : key;
-      tierBadge.style.flexShrink = "0";
-      row.appendChild(tierBadge);
+    const info = mk("div");
+    info.style.flex = "1";
 
-      // Team name + optional elim date
-      const info = mk("div");
-      info.style.flex = "1";
+    const teamName = mk("div");
+    teamName.style.cssText = `font-size:17px;${elim ? "opacity:0.42;text-decoration:line-through;" : ""}`;
+    teamName.textContent = `${t.flag} ${t.name}`;
+    info.appendChild(teamName);
 
-      const teamName = mk("div");
-      teamName.style.cssText = `font-size:15px;${elim ? "opacity:0.42;text-decoration:line-through;" : ""}`;
-      teamName.textContent = `${t.flag} ${t.name}`;
-      info.appendChild(teamName);
+    if (elim && elimInfo?.eliminatedAt) {
+      const dateEl = mk("div");
+      dateEl.style.cssText = "font-size:11px;color:var(--muted);margin-top:2px;font-family:'IBM Plex Mono',monospace;";
+      const d = new Date(elimInfo.eliminatedAt);
+      dateEl.textContent = `Eliminated ${d.toLocaleDateString([], { day: "numeric", month: "short" })}`;
+      info.appendChild(dateEl);
+    }
+    row.appendChild(info);
 
-      if (elim && elimInfo?.eliminatedAt) {
-        const dateEl = mk("div");
-        dateEl.style.cssText = "font-size:11px;color:var(--muted);margin-top:2px;font-family:'IBM Plex Mono',monospace;";
-        const d = new Date(elimInfo.eliminatedAt);
-        dateEl.textContent = `Eliminated ${d.toLocaleDateString([], { day: "numeric", month: "short" })}`;
-        info.appendChild(dateEl);
-      }
-      row.appendChild(info);
+    const statusBadge = mk("div");
+    statusBadge.style.cssText = `font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;white-space:nowrap;color:${elim ? "var(--error)" : "var(--green)"};`;
+    statusBadge.textContent = elim ? "OUT" : "ALIVE";
+    row.appendChild(statusBadge);
 
-      // Alive / out badge
-      const statusBadge = mk("div");
-      statusBadge.style.cssText = `
-        font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;
-        white-space:nowrap;
-        color:${elim ? "var(--error)" : "var(--green)"};`;
-      statusBadge.textContent = elim ? "OUT" : "ALIVE";
-      row.appendChild(statusBadge);
-
-      if (ki === 2) row.style.borderBottom = "none"; // last row
-      teamsCard.appendChild(row);
-    });
-
+    teamsCard.appendChild(row);
     container.appendChild(teamsCard);
   }
 
   // ── Match History card
-  if (teams.length > 0) {
+  if (p.team) {
     const histCard = mk("div", "card");
     histCard.style.marginBottom = "12px";
     histCard.dataset.ga = "1";
@@ -342,8 +315,7 @@ function showDetail(container, p, participants, pool, eliminatedNames, eliminate
     histCard.appendChild(histBody);
 
     container.appendChild(histCard);
-    // Load async after render
-    renderMatchHistory(histBody, teams).catch(() => {
+    renderMatchHistory(histBody, [p.team]).catch(() => {
       histBody.innerHTML = `<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);padding:6px 0;">Could not load match history.</div>`;
     });
   }
@@ -366,7 +338,7 @@ async function renderMatchHistory(container, playerTeams) {
   const teamNames = playerTeams.map(t => t.name);
 
   const now   = new Date();
-  const start = new Date("2026-06-11");
+  const start = new Date("2026-06-28");
   const fmt   = d => d.toISOString().slice(0, 10).replace(/-/g, "");
   const res   = await fetch(`${ESPN_BASE}?dates=${fmt(start)}-${fmt(now)}`);
   const data  = await res.json();
@@ -388,11 +360,11 @@ async function renderMatchHistory(container, playerTeams) {
     return;
   }
 
-  // Format player's teams as poolTeams entries (empty participantName = show tier badge only)
+  // Format player's teams as poolTeams entries
   const playerPoolTeams = playerTeams.map(t => ({
     participantName: "",
-    tierKey: t.key,
-    team: t
+    tierKey: "assigned",
+    team: { name: t.name, flag: t.flag }
   }));
 
   played.forEach(ev => {
