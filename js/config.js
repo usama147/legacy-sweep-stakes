@@ -19,7 +19,7 @@ export const db   = getFirestore(app);
 
 export const ADMIN_EMAIL = "usama@brandesign.co.za";
 
-// ── All 32 R32 knockout teams ────────────────────────────────────────────────
+// ── All 31 R32 knockout teams (South Africa eliminated R32 — lost to Canada 1-0) ──
 export const KNOCKOUT_TEAMS = [
   // Big teams (14) — must all be assigned in draw
   { name: "Argentina",    flag: "🇦🇷" },
@@ -36,9 +36,8 @@ export const KNOCKOUT_TEAMS = [
   { name: "Colombia",     flag: "🇨🇴" },
   { name: "Morocco",      flag: "🇲🇦" },
   { name: "Japan",        flag: "🇯🇵" },
-  // Non-big teams (18) — 16 assigned, 2 randomly left unowned
+  // Non-big teams (17) — 16 assigned, 1 randomly left unowned
   { name: "Mexico",             flag: "🇲🇽" },
-  { name: "South Africa",       flag: "🇿🇦" },
   { name: "Canada",             flag: "🇨🇦" },
   { name: "Bosnia-Herzegovina", flag: "🇧🇦" },
   { name: "USA",                flag: "🇺🇸" },
