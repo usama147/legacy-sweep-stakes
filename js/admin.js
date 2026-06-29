@@ -340,7 +340,7 @@ function renderResetPanel(container, participants) {
 
   const desc = el("p");
   desc.style.cssText = "color:var(--muted);font-size:13px;margin-bottom:12px;";
-  desc.textContent = "Reset the draw to run it again. This clears all team assignments and elimination data, but keeps all participant accounts and the tier/team configuration.";
+  desc.textContent = "Reset the draw to run it again. This clears all team assignments and elimination data, but keeps all participant accounts.";
   section.appendChild(desc);
 
   const resetBtn = el("button", "btn-danger");

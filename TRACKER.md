@@ -4,7 +4,40 @@ All changes made by Claude are logged here in reverse chronological order.
 
 ---
 
-## 2026-06-29
+## 2026-06-29 — All 9 Tasks Complete ✓
+
+### Task 9: Cleanup + Push (final)
+- Deleted `js/leaderboard.js` — file unused in Legacy deployment (no leaderboard tab)
+- Fixed stale copy in `js/admin.js` `renderResetPanel` — removed "and the tier/team configuration" (no tiers in this deployment)
+- Confirmed `onTabActivated()` in `js/app.js` has no leaderboard case (already absent)
+- Confirmed `index.html` has no leaderboard tab button or div (already absent)
+- Pushed all changes to `https://github.com/usama147/legacy-sweep-stakes.git`
+
+### All 9 Tasks Summary — COMPLETE
+
+| Task | File | Status |
+|---|---|---|
+| 1 | `js/config.js` | ✅ Flat 31-team KNOCKOUT_TEAMS + BIG_TEAM_NAMES + placeholder Firebase creds |
+| 2 | `js/draw.js` | ✅ Flat draw, big-team priority, assigns `team` not `teams` per participant |
+| 3 | `index.html` | ✅ App title → "Legacy Sweep Stakes", Legacy SVG logo |
+| 4 | `css/styles.css` | ✅ Full Legacy brand palette (dark green bg, bright green accent, cream text) |
+| 5 | `js/pool.js` | ✅ 1 team chip per card using `p.team`, no tier colour coding |
+| 6 | `js/pot.js` | ✅ 1 team per participant in standings + elimination panel, no tier refs |
+| 7 | `js/players.js` | ✅ 1 team per participant, simplified detail view, match history from 2026-06-28 |
+| 8 | `js/admin.js` | ✅ No tier editor, max 30 participants, simplified draw validation |
+| 9 | Cleanup + push | ✅ Deleted leaderboard.js, fixed stale copy, pushed to remote |
+
+### Next Step — Firebase Setup Required
+Firebase credentials in `js/config.js` use `REPLACE_WITH_*` placeholders intentionally.
+To activate the app:
+1. Go to console.firebase.google.com → Create project
+2. Enable Email/Password Auth (Authentication → Sign-in method)
+3. Enable Firestore (Firestore Database → Create database, start in production mode)
+4. Go to Project Settings → Your apps → Add web app → copy the config object
+5. Paste credentials into `js/config.js` replacing the `REPLACE_WITH_*` placeholders
+6. Commit and push again
+
+---
 
 ### Repo Initialised
 - Copied from `fifa-pot` repo as the starting base
