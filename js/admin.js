@@ -160,7 +160,7 @@ function renderParticipantManager(container, participants, registeredUsers) {
                 name: user.name,
                 addedAt: serverTimestamp(),
                 drawOrder: participants.length + 1,
-                teams: {}
+                team: null
               });
               const { renderAdmin } = await import("./admin.js");
               renderAdmin(document.getElementById("tab-admin"));
@@ -212,7 +212,7 @@ function renderParticipantManager(container, participants, registeredUsers) {
         name,
         addedAt: serverTimestamp(),
         drawOrder: participants.length + 1,
-        teams: {}
+        team: null
       });
       const { renderAdmin } = await import("./admin.js");
       renderAdmin(document.getElementById("tab-admin"));
@@ -358,7 +358,7 @@ function renderResetPanel(container, participants) {
       // Clear participant team assignments
       participants.forEach(p => {
         const ref = doc(db, "pool", "main", "participants", p.id);
-        batch.update(ref, { teams: {} });
+        batch.update(ref, { team: null });
       });
 
       // Reset pool flags

@@ -4,7 +4,7 @@ import {
   doc, getDoc, collection, getDocs,
   updateDoc, arrayUnion
 } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
-import { isTeamEliminated } from "./elimination.js";
+import { isTeamEliminated, fetchKnockoutEliminations, mergeEliminations } from "./elimination.js";
 
 export async function renderPot(container, isAdmin) {
   container.innerHTML = `<div class="loading">Loading pot...</div>`;
@@ -38,8 +38,9 @@ export async function renderPot(container, isAdmin) {
     return;
   }
 
-  const eliminated      = pool.eliminatedTeams || [];
-  const eliminatedNames = new Set(eliminated.map(t => t.name.toLowerCase()));
+  const firestoreElim = new Set((pool.eliminatedTeams || []).map(t => t.name.toLowerCase()));
+  const espnElim = await fetchKnockoutEliminations();
+  const eliminatedNames = mergeEliminations(firestoreElim, espnElim);
   const potTotal        = pool.buyIn * participants.length;
   const finalStandings  = pool.finalStandings || { champion: null, runnerUp: null, thirdPlace: null };
 

@@ -1,7 +1,7 @@
 // js/elimination.js
 // Auto-detect eliminated teams from ESPN knockout match results + group stage exits
 import { ESPN_BASE, FINAL_STATES } from "./matches.js";
-import { normalizeTeamName, DEFAULT_TIERS } from "./config.js";
+import { normalizeTeamName, KNOCKOUT_TEAMS } from "./config.js";
 
 const KNOCKOUT_SLUGS = [
   "round-of-32", "round-of-16", "quarterfinals",
@@ -15,13 +15,11 @@ let _cache = null;
 let _cacheTime = 0;
 const CACHE_TTL = 60_000; // 1 minute
 
-// All 48 pool team names (lowercased + normalized) for group-stage elimination detection
+// All 31 knockout pool team names (lowercased + normalized) for group-stage elimination detection
 const ALL_POOL_TEAMS = new Set();
-DEFAULT_TIERS.forEach(tier => {
-  tier.teams.forEach(t => {
-    ALL_POOL_TEAMS.add(t.name.toLowerCase());
-    ALL_POOL_TEAMS.add(normalizeTeamName(t.name));
-  });
+KNOCKOUT_TEAMS.forEach(t => {
+  ALL_POOL_TEAMS.add(t.name.toLowerCase());
+  ALL_POOL_TEAMS.add(normalizeTeamName(t.name));
 });
 
 /**
