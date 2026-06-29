@@ -9,24 +9,24 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg:              #060B18;
-  --card:            #0B1729;
-  --border:          rgba(255,255,255,0.09);
-  --text:            #EEF2FA;
-  --muted:           rgba(255,255,255,0.38);
-  --green:           #F7C520;       /* FIFA Trophy Gold — primary accent */
-  --green-dark:      #D9A818;
-  --big:             #E89626;       /* warm amber for top-tier teams */
-  --big-dim:         rgba(232,150,38,0.10);
-  --big-border:      rgba(232,150,38,0.28);
-  --smaller:         #8FACC8;
-  --smaller-dim:     rgba(143,172,200,0.09);
-  --smaller-border:  rgba(143,172,200,0.28);
-  --underdog:        #C57A3C;
-  --underdog-dim:    rgba(197,122,60,0.09);
-  --underdog-border: rgba(197,122,60,0.28);
-  --error:           #E63329;       /* FIFA Crimson */
-  --warning:         #F5A623;
+  --bg:              #1a2e1e;
+  --card:            #243d28;
+  --border:          rgba(153, 202, 61, 0.15);
+  --text:            #e8dfc6;
+  --muted:           rgba(232, 223, 198, 0.45);
+  --green:           #99ca3d;       /* Legacy primary green — main accent */
+  --green-dark:      #7aaa2a;
+  --big:             #99ca3d;       /* no tier colours — reuse primary */
+  --big-dim:         rgba(153,202,61,0.08);
+  --big-border:      rgba(153,202,61,0.25);
+  --smaller:         #75735a;
+  --smaller-dim:     rgba(117,115,90,0.08);
+  --smaller-border:  rgba(117,115,90,0.25);
+  --underdog:        #75735a;
+  --underdog-dim:    rgba(117,115,90,0.08);
+  --underdog-border: rgba(117,115,90,0.25);
+  --error:           #d94f3a;
+  --warning:         #c89b3c;
 }
 
 /* ── Performance hints for GSAP-animated elements ──────────────────────────── */
@@ -40,7 +40,7 @@ body::before {
   position: fixed;
   top: 0; left: 0; right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #E63329 0%, #F7C520 50%, #E63329 100%);
+  background: linear-gradient(90deg, #386342 0%, #99ca3d 50%, #386342 100%);
   z-index: 9999;
 }
 
@@ -69,7 +69,7 @@ body {
   padding: 40px 32px;
   width: 100%;
   max-width: 380px;
-  box-shadow: 0 0 50px rgba(247,197,32,0.07), 0 24px 64px rgba(0,0,0,0.55);
+  box-shadow: 0 0 50px rgba(153, 202, 61, 0.08), 0 24px 64px rgba(0,0,0,0.55);
 }
 
 .auth-logo-wrap {
@@ -86,7 +86,7 @@ body {
 .auth-title {
   font-family: 'Bebas Neue', sans-serif;
   font-size: clamp(36px, 10vw, 52px);
-  background: linear-gradient(135deg, #F7C520, #E89626);
+  background: linear-gradient(135deg, #99ca3d, #386342);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
