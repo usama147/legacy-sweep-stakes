@@ -1214,6 +1214,12 @@ body {
   border: 1px solid var(--underdog-border);
 }
 
+.bracket-owner-tag.assigned {
+  color: var(--green);
+  background: rgba(153,202,61,0.12);
+  border: 1px solid rgba(153,202,61,0.3);
+}
+
 /* Played match — gold accent border */
 .bracket-match--played {
   border-color: rgba(247,197,32,0.45);

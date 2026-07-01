@@ -17,6 +17,18 @@ const ROUND_LABELS = {
 
 // ── Round detection ────────────────────────────────────────────────────────────
 function detectRound(event) {
+  // ESPN always populates season.slug correctly — check it first to avoid
+  // misclassifying R16 matches on July 4-5 as R32 via the date fallback.
+  const slug = event.season?.slug || "";
+  if (slug === "round-of-32")     return "r32";
+  if (slug === "round-of-16")     return "r16";
+  if (slug === "quarterfinals")   return "qf";
+  if (slug === "semifinals")      return "sf";
+  if (slug === "3rd-place-match") return "third";
+  if (slug === "final")           return "final";
+  if (/group/i.test(slug))        return null;
+
+  // Fall back to notes headlines for events without a slug
   const notes = event.competitions?.[0]?.notes || [];
   for (const note of notes) {
     const t = (note.headline || note.type?.text || "").toLowerCase().trim();
@@ -56,29 +68,29 @@ const R32_L = [
   ["portugal","croatia"],                                         // M83  slot 4
   ["spain","austria"],                                            // M84  slot 5
   ["united states","bosnia","herze"],                             // M81  slot 6
-  ["belgium","senegal"],                                          // M82  slot 7
+  ["england","congo"],                                            // M80  slot 7  ← feeds R16 with USA/Bosnia
 ];
 const R32_R = [
   ["brazil","japan"],                                             // M76  slot 0
   ["ivory coast","côte","cote","norway"],                         // M78  slot 1
   ["mexico","ecuador"],                                           // M79  slot 2
-  ["england","congo"],                                            // M80  slot 3
-  ["argentina","cape verde"],                                     // M86  slot 4
-  ["australia","egypt"],                                          // M88  slot 5
-  ["switzerland","algeria"],                                      // M85  slot 6
+  ["belgium","senegal"],                                          // M82  slot 3  ← feeds R16 with Mexico
+  ["switzerland","algeria"],                                      // M85  slot 4
+  ["argentina","cape verde"],                                     // M86  slot 5
+  ["australia","egypt"],                                          // M88  slot 6
   ["colombia","ghana"],                                           // M87  slot 7
 ];
 
 // FIFA match numbers per bracket half (top-to-bottom visual order)
 // Source: thestatsapi.com/world-cup/data
 const MATCH_NUMS_L = {
-  r32: [74, 77, 73, 75, 83, 84, 81, 82],
+  r32: [74, 77, 73, 75, 83, 84, 81, 80],
   r16: [89, 90, 93, 94],
   qf:  [97, 98],
   sf:  [101],
 };
 const MATCH_NUMS_R = {
-  r32: [76, 78, 79, 80, 86, 88, 85, 87],
+  r32: [76, 78, 79, 82, 85, 86, 88, 87],
   r16: [91, 92, 95, 96],
   qf:  [99, 100],
   sf:  [102],

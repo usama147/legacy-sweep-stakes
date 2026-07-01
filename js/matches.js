@@ -6,7 +6,7 @@ import { teamMatches } from "./config.js";
 export const ESPN_BASE    = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
 export const ESPN_SUMMARY = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary";
 export const LIVE_STATES  = new Set(["STATUS_IN_PROGRESS", "STATUS_HALFTIME", "STATUS_END_PERIOD"]);
-export const FINAL_STATES = new Set(["STATUS_FINAL", "STATUS_FULL_TIME", "STATUS_FT_EXTRA_TIME", "STATUS_PENALTIES"]);
+export const FINAL_STATES = new Set(["STATUS_FINAL", "STATUS_FULL_TIME", "STATUS_FT_EXTRA_TIME", "STATUS_PENALTIES", "STATUS_FINAL_PEN"]);
 let pollInterval = null;
 
 export async function renderMatches(container) {
